@@ -3,7 +3,7 @@ package com.SpringBoot.journalApp.entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "Journal_Entry")
+@Document(collection = "Journal_Entries")
 public class JournalEntry {
 
     @Id
