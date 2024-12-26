@@ -2,6 +2,7 @@ package com.SpringBoot.journalApp.entity;
 
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -12,7 +13,7 @@ import java.util.Date;
 
 @Document(collection = "Journal_Entry")
 @Data     //data annotation replaces all gettr setter constructor etc using lombok
-
+@NoArgsConstructor
 public class JournalEntry {
 
     @Id

@@ -2,10 +2,12 @@ package com.SpringBoot.journalApp.Services;
 
 import com.SpringBoot.journalApp.Repository.JournalEntryRepo;
 import com.SpringBoot.journalApp.entity.JournalEntry;
+import com.SpringBoot.journalApp.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,15 +19,24 @@ public class JournalEntryService {
     @Autowired
     private JournalEntryRepo entryRepo;
 
-    public void saveEntry(JournalEntry jEntry){
-        try {
-            jEntry.setDate(LocalDateTime.now());
-            entryRepo.save(jEntry);
-        }
-        catch (Exception e){
-            log.error("Exception ",e);
-        }
+    @Autowired
+    private UserService userService;
 
+    public void saveEntry(JournalEntry jEntry, String userName){
+           try {
+               User user = userService.findByUsername(userName);
+               jEntry.setDate(LocalDateTime.now());
+               JournalEntry saved = entryRepo.save(jEntry);
+               user.getJournalEntries().add(saved);
+               userService.saveUser(user);
+           }
+           catch(Exception e){
+               System.out.println(e);
+               throw new RuntimeException("An error occurred while saving entry : ",e);
+           }
+    }
+    public void saveEntry(JournalEntry jEntry){
+        entryRepo.save(jEntry);
     }
 
     public List<JournalEntry> getAll() {
@@ -35,7 +46,20 @@ public class JournalEntryService {
         return entryRepo.findById(id);
     }
 
-    public void deleteById(ObjectId id){
-        entryRepo.deleteById(id);
+    public boolean deleteById(ObjectId id, String userName) {
+        boolean removed = false;
+        try {
+            User user = userService.findByUsername(userName);
+            removed = user.getJournalEntries().removeIf(x -> x.getId().equals(id));
+            if (removed){
+                userService.saveUser(user);
+                entryRepo.deleteById(id);
+            }
+        }
+        catch (Exception e){
+            System.out.println(e);
+            throw new RuntimeException("An error occurred while deleting the entry : ",e);
+        }
+        return removed;
     }
 }
